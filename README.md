@@ -17,3 +17,8 @@ On-screen touchscreen calibrator function for built-in displays. To use, include
    ```
 
    Note: During calibration, avoid touching the touchscreen contacts on the edge of the display. Finger resistance may alter the measurements.
+   
+   Touchscreen Instantiation Example code. The order of the calibration tuples is determined by the display rotation value.
+   
+   ![Touchscreen Instantiation Example](https://github.com/CedarGroveStudios/Touchscreen_Calibrator/blob/main/docs/Touch_Rot_Calib_example.png)
+   
