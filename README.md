@@ -12,6 +12,8 @@ On-screen touchscreen calibrator function for built-in displays. To use, include
 
    To override the display's previous rotation value, specify a rotation value (in degrees: 0, 90, 180, 270) when calling the calibrator function:
 
-   `touch_calibrator(rotation=90)`
+   ```python
+   touch_calibrator(rotation=90)
+   ```
 
    Note: During calibration, avoid touching the touchscreen contacts on the edge of the display. Finger resistance may alter the measurements.
