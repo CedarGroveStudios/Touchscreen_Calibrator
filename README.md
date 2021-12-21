@@ -20,5 +20,5 @@ On-screen touchscreen calibrator function for built-in displays. To use, include
    
    Touchscreen Instantiation Example code. The order of the calibration tuples is determined by the display rotation value.
    
-   ![Touchscreen Instantiation Example](https://github.com/CedarGroveStudios/Touchscreen_Calibrator/blob/main/docs/Touch_Rot_Calib_example.png)
+   ![Touchscreen Instantiation Example](https://github.com/CedarGroveStudios/Touchscreen_Calibrator/blob/main/docs/Touch_Rot_Calib_example.g)
    
