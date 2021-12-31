@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: 2021, 2022 Cedar Grove Maker Studios
+# SPDX-FileCopyrightText: 2021 Cedar Grove Maker Studios
 # SPDX-License-Identifier: MIT
 
-# cedargrove_touch_calibrator.py
-# 2021-12-18 v1.0
+# cedargrove_calculator.touch_calibrator.py
+# 2021-12-29 v1.1
 
 import board
 import time
@@ -11,6 +11,7 @@ import vectorio
 from adafruit_bitmap_font import bitmap_font
 from adafruit_display_text.label import Label
 import adafruit_touchscreen
+from simpleio import map_range
 
 class Colors:
     BLUE_DK = 0x000060
@@ -130,8 +131,17 @@ def touch_calibrator(rotation=None):
         height=HEIGHT,
     )
 
+    pen = vectorio.Rectangle(
+        pixel_shader=target_palette,
+        x=WIDTH // 2,
+        y=HEIGHT // 2,
+        width=6,
+        height=6,
+    )
+
     display_group.append(boundary2)
     display_group.append(boundary1)
+    display_group.append(pen)
     display_group.append(coordinates)
     display_group.append(display_rotation)
 
@@ -141,7 +151,10 @@ def touch_calibrator(rotation=None):
     while True:
         time.sleep(0.100)
         touch = ts.touch_point
-        if touch and touch[0] > 3000:
+        if touch:
+            pen.x = int(map_range(touch[0], x_min, x_max, 0, WIDTH)) - 3
+            pen.y = int(map_range(touch[1], y_min, y_max, 0, HEIGHT)) - 3
+
             x_min = min(x_min, touch[0])
             x_max = max(x_max, touch[0])
             y_min = min(y_min, touch[1])
