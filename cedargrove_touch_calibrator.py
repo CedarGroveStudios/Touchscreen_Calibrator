@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2021 Cedar Grove Maker Studios
 # SPDX-License-Identifier: MIT
 
-# cedargrove_calculator.touch_calibrator.py
+# cedargrove_touch_calibrator.py
 # 2021-12-30 v1.2
 
 import board
