@@ -21,7 +21,7 @@ class Colors:
     WHITE = 0xFFFFFF
 
 
-def touch_calibrator(rotation=None, repl_only=False):
+def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
     """On-screen touchscreen calibrator function for TFT FeatherWings. To use,
     include the following two lines in the calling module or type into the REPL:
 
@@ -83,49 +83,16 @@ def touch_calibrator(rotation=None, repl_only=False):
 
     # Instantiate touch screen without calibration or display size parameters
     ts_cs_pin = digitalio.DigitalInOut(board.D6)
-    ts = cg_stmpe610.Adafruit_STMPE610_SPI(spi, ts_cs_pin)
 
-    """if rotation == 0:
-        ts = adafruit_touchscreen.Touchscreen(
-            board.TOUCH_XL,
-            board.TOUCH_XR,
-            board.TOUCH_YD,
-            board.TOUCH_YU,
-            # calibration=((5200, 59000), (5250, 59500)),
-            # size=(WIDTH, HEIGHT),
-        )
-
-    elif rotation == 90:
-        ts = adafruit_touchscreen.Touchscreen(
-            board.TOUCH_YU,
-            board.TOUCH_YD,
-            board.TOUCH_XL,
-            board.TOUCH_XR,
-            # calibration=((5250, 59500), (5200, 59000)),
-            # size=(WIDTH, HEIGHT),
-        )
-
-    elif rotation == 180:
-        ts = adafruit_touchscreen.Touchscreen(
-            board.TOUCH_XR,
-            board.TOUCH_XL,
-            board.TOUCH_YU,
-            board.TOUCH_YD,
-            # calibration=((5200, 59000), (5250, 59500)),
-            # size=(WIDTH, HEIGHT),
-        )
-
-    elif rotation == 270:
-        ts = adafruit_touchscreen.Touchscreen(
-            board.TOUCH_YD,
-            board.TOUCH_YU,
-            board.TOUCH_XR,
-            board.TOUCH_XL,
-            # calibration=((5250, 59500), (5200, 59000)),
-            # size=(WIDTH, HEIGHT),
-        )
+    # Measure and display raw touch data or
+    #  scaled screen size data with a previously measured raw calibration range
+    if raw_data:
+        ts = cg_stmpe610.Adafruit_STMPE610_SPI(spi, ts_cs_pin)
     else:
-        raise ValueError("Rotation value must be 0, 90, 180, or 270")"""
+        ts = cg_stmpe610.Adafruit_STMPE610_SPI(
+            spi, ts_cs_pin, calibration=((357, 3812), (390, 3555)),
+            size=(WIDTH, HEIGHT)
+            )
 
     if not repl_only:
         FONT_0 = bitmap_font.load_font("/fonts/OpenSans-9.bdf")
@@ -181,8 +148,11 @@ def touch_calibrator(rotation=None, repl_only=False):
         display_group.append(display_rotation)
 
     # Reset x and y values to raw value mid-point
-    x_min = y_min = x_max = y_max = 4096 // 2
     x = y = 0
+    if raw_data:
+        x_min = y_min = x_max = y_max = 4096 // 2
+    else:
+        x_min = y_min = x_max = y_max = min(WIDTH, HEIGHT) // 2  # Display mid-point
 
     print("Touchscreen Calibrator")
     print("  Use a stylus to swipe to the four sides")
@@ -199,15 +169,17 @@ def touch_calibrator(rotation=None, repl_only=False):
             if _rotation == 0:
                 x = touch[0]
                 y = touch[1]
-            if _rotation == 90:
+            elif _rotation == 90:
                 x = touch[1]
                 y = 4095 - touch[0]
-            if _rotation == 180:
+            elif _rotation == 180:
                 x = 4095 - touch[0]
                 y = 4095 - touch[1]
-            if _rotation == 270:
+            elif _rotation == 270:
                 x = 4095 - touch[1]
                 y = touch[0]
+            else:
+                raise ValueError("Rotation value must be 0, 90, 180, or 270")
 
             if not repl_only:
                 pen.x = int(map_range(x, x_min, x_max, 0, WIDTH)) - 5

@@ -21,6 +21,29 @@ __version__ = "1.2.7"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_STMPE610.git"
 
 
+def map_range(x, in_min, in_max, out_min, out_max):
+    """
+    Maps a value from one range to another. Values beyond the input minimum or
+    maximum will be limited to the minimum or maximum of the output range.
+
+    :return: Returns value mapped to new range
+    :rtype: float
+    """
+    in_range = in_max - in_min
+    in_delta = x - in_min
+    if in_range != 0:
+        mapped = in_delta / in_range
+    elif in_delta != 0:
+        mapped = in_delta
+    else:
+        mapped = 0.5
+    mapped *= out_max - out_min
+    mapped += out_min
+    if out_min <= out_max:
+        return max(min(mapped, out_max), out_min)
+    return min(max(mapped, out_max), out_min)
+
+
 _STMPE_ADDR = const(0x41)
 _STMPE_VERSION = const(0x0811)
 
@@ -117,6 +140,11 @@ class Adafruit_STMPE610:
 
     def __init__(self):
         """Reset the controller"""
+        if not self._calib:
+            self._calib = ((0, 4095), (0, 4095))
+        if not self._display_size:
+            self._display_size = (4095, 4095)
+
         self._write_register_byte(_STMPE_SYS_CTRL1, _STMPE_SYS_CTRL1_RESET)
         time.sleep(0.001)
 
@@ -233,6 +261,9 @@ class Adafruit_STMPE610:
                 x = point["y"]
                 y = point["x"]
                 z = point["pressure"]
+                # Adjust x y values for screen size and calibration range
+                x = int(map_range(x, self._calib[0][0], self._calib[0][1], 0, self._display_size[0]))
+                y = int(map_range(y, self._calib[1][0], self._calib[1][1], 0, self._display_size[1]))
             return (x, y, z)
         return None
 
@@ -241,11 +272,13 @@ class Adafruit_STMPE610_I2C(Adafruit_STMPE610):
     I2C driver for the STMPE610 Resistive Touch sensor.
     """
 
-    def __init__(self, i2c, address=_STMPE_ADDR):
+    def __init__(self, i2c, address=_STMPE_ADDR, calibration=None, size=None):
         """
         Check the STMPE610 was founnd
         Default address is 0x41 but another address can be passed in as an argument
         """
+        self._calib = calibration
+        self._display_size = size
         import adafruit_bus_device.i2c_device as i2cdev  # pylint: disable=import-outside-toplevel
 
         self._i2c = i2cdev.I2CDevice(i2c, address)
@@ -276,10 +309,12 @@ class Adafruit_STMPE610_SPI(Adafruit_STMPE610):
     SPI driver for the STMPE610 Resistive Touch sensor.
     """
 
-    def __init__(self, spi, cs, baudrate=1000000):
+    def __init__(self, spi, cs, baudrate=1000000, calibration=None, size=None):
         """
         Check the STMPE610 was found,Default clock rate 1000000 - can be changed with 'baudrate'
         """
+        self._calib = calibration
+        self._display_size = size
         import adafruit_bus_device.spi_device as spidev  # pylint: disable=import-outside-toplevel
 
         self._spi = spidev.SPIDevice(spi, cs, baudrate=baudrate)
