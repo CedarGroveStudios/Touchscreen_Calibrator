@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 # cedargrove_touch_calibrator_stmpe610.py
-# 2022-01-17 v1.2
+# 2022-01-18 v1.9
 
 import board
 import time
@@ -49,12 +49,15 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
     """
 
     from adafruit_ili9341 import ILI9341  # 2.4" 320x240 TFT FeatherWing (#3315)
-    #from adafruit_hx8357 import HX8357  # 3.5" 480x320 TFT FeatherWing (#3651)
+
+    # from adafruit_hx8357 import HX8357  # 3.5" 480x320 TFT FeatherWing (#3651)
 
     # Release any resources currently in use for the displays
     displayio.release_displays()
 
-    spi = board.SPI()  # SCK to display SCK, MO to display SI, MI to display SO (SD card)
+    spi = (
+        board.SPI()
+    )  # SCK to display SCK, MO to display SI, MI to display SO (SD card)
     tft_cs = board.D9  # to display TCS
     tft_dc = board.D10  # to display D/C
     tft_reset = None  # to display RST (for Feather, board.D6 for breakout)
@@ -66,7 +69,7 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
     # 320 x 240
     display = ILI9341(display_bus, width=320, height=240)
     # 480 x 320
-    #display = HX8357(display_bus, width=480, height=320)
+    # display = HX8357(display_bus, width=480, height=320)
 
     if not rotation:
         _rotation = 0
@@ -90,9 +93,8 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
         ts = cg_stmpe610.Adafruit_STMPE610_SPI(spi, ts_cs_pin)
     else:
         ts = cg_stmpe610.Adafruit_STMPE610_SPI(
-            spi, ts_cs_pin, calibration=((357, 3812), (390, 3555)),
-            size=(WIDTH, HEIGHT)
-            )
+            spi, ts_cs_pin, calibration=((357, 3812), (390, 3555)), size=(WIDTH, HEIGHT)
+        )
 
     if not repl_only:
         FONT_0 = bitmap_font.load_font("/fonts/OpenSans-9.bdf")
@@ -182,8 +184,8 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
                 raise ValueError("Rotation value must be 0, 90, 180, or 270")
 
             if not repl_only:
-                pen.x = int(map_range(x, x_min, x_max, 0, WIDTH)) - 5
-                pen.y = int(map_range(y, y_min, y_max, 0, HEIGHT)) - 5
+                pen.x = int(round(map_range(x, x_min, x_max, 0, WIDTH), 0)) - 5
+                pen.y = int(round(map_range(y, y_min, y_max, 0, HEIGHT), 0)) - 5
 
             x_min = min(x_min, touch[0])
             x_max = max(x_max, touch[0])
@@ -193,83 +195,4 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
             print(f"(({x_min}, {x_max}), ({y_min}, {y_max}))")
             if not repl_only:
                 coordinates.text = f"calib: (({x_min}, {x_max}), ({y_min}, {y_max}))"
-
-
-
-
-    while True:
-        if ts.touched:
-            while not ts.buffer_empty:
-                touches = ts.touches
-                for point in touches:
-                    _y = point["y"]
-                    _x = point["x"]
-                    _z = point["pressure"]
-                print(touches)
-                if _rotation == 0:
-                    x = _y
-                    y = _x
-                if _rotation == 90:
-                    x = _x
-                    y = 4095 - _y
-                if _rotation == 180:
-                    x = 4095 - _y
-                    y = 4095 - _x
-                if _rotation == 270:
-                    x = 4095 - _x
-                    y = _y
-
-                print(x, y)
-                if not repl_only:
-                    pen.x = int(map_range(x, x_min, x_max, 0, WIDTH)) - 5
-                    pen.y = int(map_range(y, y_min, y_max, 0, HEIGHT)) - 5
-
-                x_min = min(x_min, x)
-                x_max = max(x_max, x)
-                y_min = min(y_min, y)
-                y_max = max(y_max, y)
-
-                #print(f"(({x_min}, {x_max}), ({y_min}, {y_max}))")
-                if not repl_only:
-                    coordinates.text = f"calib: (({x_min}, {x_max}), ({y_min}, {y_max}))"
     return
-
-
-
-    while True:
-        time.sleep(0.100)
-        touch = ts.touch_point
-        if touch:
-            print("touch_point:", ts.touch_point)
-
-        """#touch = ts.touch_point
-        touch = ts.touched
-        if touch:
-            while not ts.buffer_empty:
-                touches = ts.touches
-                for point in touches:
-                    if _rotation == 0:
-                        x = point["y"]
-                        y = point["x"]
-                    if _rotation == 90:
-                        x = point["x"]
-                        y = 4095 - point["y"]
-                    if _rotation == 180:
-                        x = 4095 - point["y"]
-                        y = 4095 - point["x"]
-                    if _rotation == 270:
-                        x = 4095 - point["x"]
-                        y = point["y"]
-                if not repl_only:
-                    pen.x = int(map_range(x, x_min, x_max, 0, WIDTH)) - 5
-                    pen.y = int(map_range(y, y_min, y_max, 0, HEIGHT)) - 5
-
-                x_min = min(x_min, x)
-                x_max = max(x_max, x)
-                y_min = min(y_min, x)
-                y_max = max(y_max, x)
-
-                print(f"(({x_min}, {x_max}), ({y_min}, {y_max}))")
-                if not repl_only:
-                    coordinates.text = f"calib: (({x_min}, {x_max}), ({y_min}, {y_max}))"
-    return"""

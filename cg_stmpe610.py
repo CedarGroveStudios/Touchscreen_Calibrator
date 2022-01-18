@@ -254,18 +254,32 @@ class Adafruit_STMPE610:
         display_size and calibration in compatibility with the UI for
         adafruit_touchscreen.touch_point, and ultimately adafruit_button."""
         if self.touched and not self.buffer_empty:
-            # Read latest point in buffer
+            # Read latest point in FIFO buffer
             while not self.buffer_empty:
                 point = self.get_point
-                # Swap x and y for 0-degree screen rotation (needed for TFT FeatherWing)
-                x = point["y"]
-                y = point["x"]
-                z = point["pressure"]
-                # Adjust x y values for screen size and calibration range
-                x = int(map_range(x, self._calib[0][0], self._calib[0][1], 0, self._display_size[0]))
-                y = int(map_range(y, self._calib[1][0], self._calib[1][1], 0, self._display_size[1]))
-            return (x, y, z)
+            # Swap x and y for 0-degree screen rotation (needed for TFT FeatherWing)
+            # Adjust values for screen size and calibration range
+            x = int(
+                map_range(
+                    point["y"],
+                    self._calib[0][0],
+                    self._calib[0][1],
+                    0,
+                    self._display_size[0],
+                )
+            )
+            y = int(
+                map_range(
+                    point["x"],
+                    self._calib[1][0],
+                    self._calib[1][1],
+                    0,
+                    self._display_size[1],
+                )
+            )
+            return (x, y, point["pressure"])
         return None
+
 
 class Adafruit_STMPE610_I2C(Adafruit_STMPE610):
     """
