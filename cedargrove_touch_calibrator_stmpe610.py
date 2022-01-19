@@ -168,20 +168,8 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
         time.sleep(0.100)
         touch = ts.touch_point
         if touch:
-            if _rotation == 0:
-                x = touch[0]
-                y = touch[1]
-            elif _rotation == 90:
-                x = touch[1]
-                y = 4095 - touch[0]
-            elif _rotation == 180:
-                x = 4095 - touch[0]
-                y = 4095 - touch[1]
-            elif _rotation == 270:
-                x = 4095 - touch[1]
-                y = touch[0]
-            else:
-                raise ValueError("Rotation value must be 0, 90, 180, or 270")
+            x = touch[0]
+            y = touch[1]
 
             if not repl_only:
                 pen.x = int(round(map_range(x, x_min, x_max, 0, WIDTH), 0)) - 5
