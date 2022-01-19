@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 # cedargrove_touch_calibrator_stmpe610.py
-# 2022-01-18 v1.9
+# 2022-01-18 v1.918
 
 import board
 import time
@@ -76,9 +76,9 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
     else:
         _rotation = rotation
 
+    # Always set display width and height after rotation
     display.rotation = _rotation
-
-    WIDTH, HEIGHT = (display.width, display.height)
+    WIDTH, HEIGHT = display.width, display.height
 
     if not repl_only:
         display_group = displayio.Group()
@@ -90,10 +90,13 @@ def touch_calibrator(rotation=None, repl_only=False, raw_data=True):
     # Measure and display raw touch data or
     #  scaled screen size data with a previously measured raw calibration range
     if raw_data:
-        ts = cg_stmpe610.Adafruit_STMPE610_SPI(spi, ts_cs_pin)
+        ts = cg_stmpe610.Adafruit_STMPE610_SPI(spi, ts_cs_pin,
+        display_rotation=display.rotation,
+        )
     else:
         ts = cg_stmpe610.Adafruit_STMPE610_SPI(
-            spi, ts_cs_pin, calibration=((357, 3812), (390, 3555)), size=(WIDTH, HEIGHT)
+            spi, ts_cs_pin, calibration=((357, 3812), (390, 3555)),
+            size=(WIDTH, HEIGHT), display_rotation=display.rotation,
         )
 
     if not repl_only:
