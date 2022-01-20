@@ -82,10 +82,8 @@ if not REPL_ONLY:
     display_group = displayio.Group()
     display.show(display_group)
 
-# Instantiate touch screen.
+# Instantiate touchscreen.
 ts_cs = digitalio.DigitalInOut(board.D6)
-
-# Initialize touchscreen.
 if RAW_DATA:
     # Display raw touchscreen values; calibration tuple not required.
     ts = adafruit_stmpe610.Adafruit_STMPE610_SPI(
