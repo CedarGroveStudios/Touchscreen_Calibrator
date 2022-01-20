@@ -55,16 +55,13 @@ else:
     display.rotation = 0
     time.sleep(1)
 
-WIDTH = board.DISPLAY.width
-HEIGHT = board.DISPLAY.height
-
 # Activate the display graphics unless REPL_ONLY=True.
 if not REPL_ONLY:
     display_group = displayio.Group()
     display.show(display_group)
 
 # Instantiate touch screen without calibration or display size parameters
-if rotation == 0:
+if display.rotation == 0:
     ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_XL,
         board.TOUCH_XR,
@@ -74,7 +71,7 @@ if rotation == 0:
         # size=(board.DISPLAY.width, board.DISPLAY.height),
     )
 
-elif rotation == 90:
+elif display.rotation == 90:
     ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_YU,
         board.TOUCH_YD,
@@ -84,7 +81,7 @@ elif rotation == 90:
         # size=(board.DISPLAY.width, board.DISPLAY.height),
     )
 
-elif rotation == 180:
+elif display.rotation == 180:
     ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_XR,
         board.TOUCH_XL,
@@ -94,7 +91,7 @@ elif rotation == 180:
         # size=(board.DISPLAY.width, board.DISPLAY.height),
     )
 
-elif rotation == 270:
+elif display.rotation == 270:
     ts = adafruit_touchscreen.Touchscreen(
         board.TOUCH_YD,
         board.TOUCH_YU,
@@ -121,7 +118,7 @@ if not REPL_ONLY:
 
     display_rotation = Label(
         font=font_0,
-        text="rotation: " + str(rotation),
+        text="rotation: " + str(display.rotation),
         color=Colors.WHITE,
     )
     display_rotation.anchor_point = (0.5, 0.5)
