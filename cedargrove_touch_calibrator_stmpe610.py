@@ -22,7 +22,7 @@ class Colors:
 
 
 def touch_calibrator(
-    display_rotation=None, touch_flip=None, repl_only=False, raw_data=True
+    display_rotation=None, repl_only=False, raw_data=True
 ):
     """On-screen touchscreen calibrator function for TFT FeatherWings. To use,
     include the following two lines in the calling module or type into the REPL:
@@ -34,16 +34,6 @@ def touch_calibrator(
     (in degrees: 0, 90, 180, 270) when calling the calibrator function:
 
     touch_calibrator(display_rotation=90)
-
-    One of both touchscreen axes may not match the display orientation. To flip
-    the minimum and maximimum values of a touchscreen axis range, use the
-    touch_flip=(x, y) parameter. For example, to flip the touchscreen x-axis:
-
-    touch_calibrator(touch_flip=(True, False))
-
-    To flip the y-axis:
-
-    touch_calibrator(touch_flip(False, True))
 
     When the test screen appears, use a stylus to swipe to the four sides
     of the visible display area. As the screen is calibrated, the small red
@@ -60,10 +50,6 @@ def touch_calibrator(
     Default value is False.
     """
 
-    # from adafruit_ili9341 import ILI9341  # 2.4" 320x240 TFT FeatherWing (#3315)
-
-    from adafruit_hx8357 import HX8357  # 3.5" 480x320 TFT FeatherWing (#3651)
-
     # Release any resources currently in use for the displays
     displayio.release_displays()
 
@@ -78,10 +64,15 @@ def touch_calibrator(
         spi, command=tft_dc, chip_select=tft_cs, reset=tft_reset
     )
 
-    # 320 x 240
-    # display = ILI9341(display_bus, width=320, height=240)
-    # 480 x 320
+    # 2.4" 320x240 TFT FeatherWing (#3315)
+    from adafruit_ili9341 import ILI9341  # 2.4" 320x240 TFT FeatherWing (#3315)
+    display = ILI9341(display_bus, width=320, height=240)
+    _touch_flip = (False, False)
+
+    """# 3.5" 480x320 TFT FeatherWing (#3651)
+    from adafruit_hx8357 import HX8357  # 3.5" 480x320 TFT FeatherWing (#3651)
     display = HX8357(display_bus, width=480, height=320)
+    _touch_flip = (False, True)"""
 
     if display_rotation != None and display_rotation in (0, 90, 180, 270):
         _disp_rotation = display_rotation
@@ -103,10 +94,9 @@ def touch_calibrator(
 
     # Measure and display raw touch data or
     #  scaled screen size data using a defined raw calibration range
-    # 3.5" TFT Wing require touch_flip=(False, True)
     if raw_data:
         ts = cg_stmpe610.Adafruit_STMPE610_SPI(
-            spi, ts_cs_pin, disp_rotation=display.rotation, touch_flip=(False, True)
+            spi, ts_cs_pin, disp_rotation=display.rotation, touch_flip=_touch_flip
         )
     else:
         ts = cg_stmpe610.Adafruit_STMPE610_SPI(
@@ -115,7 +105,7 @@ def touch_calibrator(
             calibration=((357, 3812), (390, 3555)),
             size=(WIDTH, HEIGHT),
             disp_rotation=display.rotation,
-            touch_flip=(False, True),
+            touch_flip=_touch_flip,
         )
 
     if not repl_only:

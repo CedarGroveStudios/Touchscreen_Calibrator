@@ -266,6 +266,7 @@ class Adafruit_STMPE610:
             while not self.buffer_empty:
                 x_loc, y_loc, pressure = self.read_data()
 
+            print(self._disp_rotation, self._touch_flip)
             # Swap touch axis range minimum and maximum if needed
             if self._disp_rotation in (0, 180):
                 if self._touch_flip and self._touch_flip[0]:
@@ -277,14 +278,16 @@ class Adafruit_STMPE610:
                 else:
                     y_c = (self._calib[1][0], self._calib[1][1])
             if self._disp_rotation in (90, 270):
-                if self._touch_flip and self._touch_flip[0]:
-                    x_c = (self._calib[1][0], self._calib[1][1])
-                else:
+                if self._touch_flip[1]:
                     x_c = (self._calib[1][1], self._calib[1][0])
-                if self._touch_flip and self._touch_flip[1]:
-                    y_c = (self._calib[0][0], self._calib[0][1])
                 else:
+                    x_c = (self._calib[1][0], self._calib[1][1])
+                if self._touch_flip[0]:
                     y_c = (self._calib[0][1], self._calib[0][0])
+                else:
+                    y_c = (self._calib[0][0], self._calib[0][1])
+
+            print("x_c, y_c", x_c, y_c)
 
             # Adjust to calibration range; convert to display size and rotation
             if self._disp_rotation == 0:
