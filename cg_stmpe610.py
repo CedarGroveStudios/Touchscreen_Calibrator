@@ -1,14 +1,21 @@
 # SPDX-FileCopyrightText: 2017 Jerry Needell for Adafruit Industries
 #
 # SPDX-License-Identifier: MIT
-
 """
 `adafruit_stmpe610`
 ====================================================
-
 This is a CircuitPython Driver for the STMPE610 Resistive Touch sensor
 
 * Author(s): Jerry Needell
+
+Implementation Notes
+--------------------
+**Hardware:**
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the supported boards:
+  https://github.com/adafruit/circuitpython/releases
 """
 
 # imports
@@ -142,10 +149,10 @@ class Adafruit_STMPE610:
         """Reset the controller"""
         if not self._calib:
             self._calib = ((0, 4095), (0, 4095))
-        if not self._display_size:
-            self._display_size = (4095, 4095)
+        if not self._disp_size:
+            self._disp_size = (4095, 4095)
 
-        if not self._display_rotation in (0, 90, 180, 270):
+        if not self._disp_rotation in (0, 90, 180, 270):
             raise ValueError("Display rotation value must be 0, 90, 180, or 270")
 
         self._write_register_byte(_STMPE_SYS_CTRL1, _STMPE_SYS_CTRL1_RESET)
@@ -258,83 +265,40 @@ class Adafruit_STMPE610:
         if not self.buffer_empty:
             while not self.buffer_empty:
                 x_loc, y_loc, pressure = self.read_data()
+
+            # Swap touch axis range minimum and maximum if needed
+            if self._disp_rotation in (0, 180):
+                if self._touch_flip and self._touch_flip[0]:
+                    x_c = (self._calib[0][1], self._calib[0][0])
+                else:
+                    x_c = (self._calib[0][0], self._calib[0][1])
+                if self._touch_flip and self._touch_flip[1]:
+                    y_c = (self._calib[1][1], self._calib[1][0])
+                else:
+                    y_c = (self._calib[1][0], self._calib[1][1])
+            if self._disp_rotation in (90, 270):
+                if self._touch_flip and self._touch_flip[0]:
+                    x_c = (self._calib[1][0], self._calib[1][1])
+                else:
+                    x_c = (self._calib[1][1], self._calib[1][0])
+                if self._touch_flip and self._touch_flip[1]:
+                    y_c = (self._calib[0][0], self._calib[0][1])
+                else:
+                    y_c = (self._calib[0][1], self._calib[0][0])
+
             # Adjust to calibration range; convert to display size and rotation
-            if self._display_rotation == 0:
-                x = int(
-                    map_range(
-                        y_loc,
-                        self._calib[0][0],
-                        self._calib[0][1],
-                        0,
-                        self._display_size[0],
-                    )
-                )
-                y = int(
-                    map_range(
-                        x_loc,
-                        self._calib[1][0],
-                        self._calib[1][1],
-                        0,
-                        self._display_size[1],
-                    )
-                )
-            elif self._display_rotation == 90:
-                x = int(
-                    map_range(
-                        x_loc,
-                        self._calib[1][0],
-                        self._calib[1][1],
-                        0,
-                        self._display_size[0],
-                    )
-                )
-                y = int(
-                    map_range(
-                        y_loc,
-                        self._calib[0][0],
-                        self._calib[0][1],
-                        self._display_size[1],
-                        0,
-                    )
-                )
-            elif self._display_rotation == 180:
-                x = int(
-                    map_range(
-                        y_loc,
-                        self._calib[0][0],
-                        self._calib[0][1],
-                        self._display_size[0],
-                        0,
-                    )
-                )
-                y = int(
-                    map_range(
-                        x_loc,
-                        self._calib[1][0],
-                        self._calib[1][1],
-                        self._display_size[1],
-                        0,
-                    )
-                )
-            elif self._display_rotation == 270:
-                x = int(
-                    map_range(
-                        x_loc,
-                        self._calib[1][0],
-                        self._calib[1][1],
-                        self._display_size[0],
-                        0,
-                    )
-                )
-                y = int(
-                    map_range(
-                        y_loc,
-                        self._calib[0][0],
-                        self._calib[0][1],
-                        0,
-                        self._display_size[1],
-                    )
-                )
+            if self._disp_rotation == 0:
+                x = int(map_range(y_loc, x_c[0], x_c[1], 0, self._disp_size[0]))
+                y = int(map_range(x_loc, y_c[0], y_c[1], 0, self._disp_size[1]))
+            elif self._disp_rotation == 90:
+                x = int(map_range(x_loc, x_c[0], x_c[1], 0, self._disp_size[0]))
+                y = int(map_range(y_loc, y_c[0], y_c[1], self._disp_size[1], 0))
+            elif self._disp_rotation == 180:
+                x = int(map_range(y_loc, x_c[0], x_c[1], self._disp_size[0], 0))
+                y = int(map_range(x_loc, y_c[0], y_c[1], self._disp_size[1], 0))
+            elif self._disp_rotation == 270:
+                x = int(map_range(x_loc, x_c[0], x_c[1], self._disp_size[0], 0))
+                y = int(map_range(y_loc, y_c[0], y_c[1], 0, self._disp_size[1]))
             return (x, y, pressure)
         return None
 
@@ -345,15 +309,22 @@ class Adafruit_STMPE610_I2C(Adafruit_STMPE610):
     """
 
     def __init__(
-        self, i2c, address=_STMPE_ADDR, calibration=None, size=None, display_rotation=0
+        self,
+        i2c,
+        address=_STMPE_ADDR,
+        calibration=None,
+        size=None,
+        disp_rotation=0,
+        touch_flip=(False, False),
     ):
         """
         Check the STMPE610 was founnd
         Default address is 0x41 but another address can be passed in as an argument
         """
         self._calib = calibration
-        self._display_size = size
-        self._display_rotation = display_rotation
+        self._disp_size = size
+        self._disp_rotation = disp_rotation
+        self._touch_flip = touch_flip
         import adafruit_bus_device.i2c_device as i2cdev  # pylint: disable=import-outside-toplevel
 
         self._i2c = i2cdev.I2CDevice(i2c, address)
@@ -385,14 +356,22 @@ class Adafruit_STMPE610_SPI(Adafruit_STMPE610):
     """
 
     def __init__(
-        self, spi, cs, baudrate=1000000, calibration=None, size=None, display_rotation=0
+        self,
+        spi,
+        cs,
+        baudrate=1000000,
+        calibration=None,
+        size=None,
+        disp_rotation=0,
+        touch_flip=(False, False),
     ):
         """
         Check the STMPE610 was found,Default clock rate 1000000 - can be changed with 'baudrate'
         """
         self._calib = calibration
-        self._display_size = size
-        self._display_rotation = display_rotation
+        self._disp_size = size
+        self._disp_rotation = disp_rotation
+        self._touch_flip = touch_flip
         import adafruit_bus_device.spi_device as spidev  # pylint: disable=import-outside-toplevel
 
         self._spi = spidev.SPIDevice(spi, cs, baudrate=baudrate)
