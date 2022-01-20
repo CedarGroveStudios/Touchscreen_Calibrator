@@ -83,10 +83,12 @@ def touch_calibrator(
     # 480 x 320
     display = HX8357(display_bus, width=480, height=320)
 
-    if not display_rotation:
-        _disp_rotation = 0
-    else:
+    if display_rotation != None and display_rotation in (0, 90, 180, 270):
         _disp_rotation = display_rotation
+    else:
+        print("Warning: invalid rotation value -- defalting to zero")
+        _disp_rotation = 0
+        time.sleep(1)
 
     # Always set display width and height after rotation
     display.rotation = _disp_rotation
