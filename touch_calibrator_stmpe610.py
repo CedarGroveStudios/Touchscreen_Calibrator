@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: 2022 Cedar Grove Maker Studios
+# SPDX-FileCopyrightText: 2022 CedarGroveMakerStudios for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
 """
 touch_calibrator_stmpe610.py  2022-01-20 v1.0
 
-Author(s): JG for Cedar Grove Maker Studios
+Author(s): CedarGroveMakerStudios
 
 On-screen touchscreen calibrator for TFT FeatherWing displays.
 
@@ -28,15 +28,17 @@ display the touch value in screen coordinates; requires a previously measured
 calibration tuple for screen coordinate conversion accuracy.
 """
 
-import board
 import time
+import board
 import digitalio
 import displayio
 import vectorio
 from adafruit_bitmap_font import bitmap_font
 from adafruit_display_text.label import Label
-import adafruit_stmpe610
+#from adafruit_hx8357 import HX8357
+from adafruit_ili9341 import ILI9341
 from simpleio import map_range
+import adafruit_stmpe610
 
 # Operational parameters:
 DISPLAY_ROTATION = 0  # Specify 0, 90, 180, or 270 degrees
@@ -47,30 +49,30 @@ RAW_DATA = True  # Use touchscreen raw values; False to use display coordinates
 CALIBRATION = ((357, 3812), (390, 3555))
 
 # A collection of colors used for graphic objects
-class Colors:
-    BLUE_DK = 0x000060  # Screen fill
-    RED = 0xFF0000  # Boundary
-    WHITE = 0xFFFFFF  # Text
+BLUE_DK = 0x000060  # Screen fill
+RED = 0xFF0000  # Boundary
+WHITE = 0xFFFFFF  # Text
+
 
 # Release any resources currently in use for the displays
 displayio.release_displays()
 
 # Define the display's SPI bus connection
-disp_bus = displayio.FourWire(board.SPI(), command=board.D10, chip_select=board.D9, reset=None)
+disp_bus = displayio.FourWire(
+    board.SPI(), command=board.D10, chip_select=board.D9, reset=None
+)
 
 # Instantiate the 2.4" 320x240 TFT FeatherWing (#3315).
-from adafruit_ili9341 import ILI9341
 display = ILI9341(disp_bus, width=320, height=240)
 _touch_flip = (False, False)
 
 """# Instantiate the 3.5" 480x320 TFT FeatherWing (#3651).
-from adafruit_hx8357 import HX8357
 display = HX8357(disp_bus, width=480, height=320)
 _touch_flip = (False, True)"""
 
 # Check rotation value and update display.
 # Always set rotation before instantiating the touchscreen.
-if DISPLAY_ROTATION != None and DISPLAY_ROTATION in (0, 90, 180, 270):
+if DISPLAY_ROTATION is not None and DISPLAY_ROTATION in (0, 90, 180, 270):
     display.rotation = DISPLAY_ROTATION
 else:
     print("Warning: invalid rotation value -- defalting to zero")
@@ -92,8 +94,14 @@ if RAW_DATA:
 else:
     # Display calibrated screen coordinates.
     # Update the raw calibration tuple with previously measured values.
-    ts = adafruit_stmpe610.Adafruit_STMPE610_SPI(board.SPI(), ts_cs, calibration=CALIBRATION,
-        size=(display.width, display.height), disp_rotation=display.rotation, touch_flip=_touch_flip)
+    ts = adafruit_stmpe610.Adafruit_STMPE610_SPI(
+        board.SPI(),
+        ts_cs,
+        calibration=CALIBRATION,
+        size=(display.width, display.height),
+        disp_rotation=display.rotation,
+        touch_flip=_touch_flip,
+    )
 
 # Define the graphic objects if REPL_ONLY = False.
 if not REPL_ONLY:
@@ -103,7 +111,7 @@ if not REPL_ONLY:
     coordinates = Label(
         font=font_0,
         text="calib: ((x_min, x_max), (y_min, y_max))",
-        color=Colors.WHITE,
+        color=WHITE,
     )
     coordinates.anchor_point = (0.5, 0.5)
     coordinates.anchored_position = (display.width // 2, display.height // 4)
@@ -111,14 +119,14 @@ if not REPL_ONLY:
     display_rotation = Label(
         font=font_0,
         text="rotation: " + str(display.rotation),
-        color=Colors.WHITE,
+        color=WHITE,
     )
     display_rotation.anchor_point = (0.5, 0.5)
     display_rotation.anchored_position = (display.width // 2, display.height // 4 - 30)
 
     # Define graphic objects for the screen fill, boundary, and touch pen.
     target_palette = displayio.Palette(1)
-    target_palette[0] = Colors.BLUE_DK
+    target_palette[0] = BLUE_DK
     screen_fill = vectorio.Rectangle(
         pixel_shader=target_palette,
         x=2,
@@ -128,7 +136,7 @@ if not REPL_ONLY:
     )
 
     target_palette = displayio.Palette(1)
-    target_palette[0] = Colors.RED
+    target_palette[0] = RED
     boundary = vectorio.Rectangle(
         pixel_shader=target_palette,
         x=0,

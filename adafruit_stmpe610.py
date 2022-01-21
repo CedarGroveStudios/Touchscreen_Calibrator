@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017 Jerry Needell for Adafruit Industries
+# SPDX-FileCopyrightText: 2017, 2022 Jerry Needell for Adafruit Industries
 #
 # SPDX-License-Identifier: MIT
 """
@@ -6,7 +6,7 @@
 ====================================================
 This is a CircuitPython Driver for the STMPE610 Resistive Touch sensor
 
-* Author(s): Jerry Needell
+* Author(s): Jerry Needell, CedarGroveMakerStudios
 
 Implementation Notes
 --------------------
@@ -17,8 +17,6 @@ Implementation Notes
 * Adafruit CircuitPython firmware for the supported boards:
   https://github.com/adafruit/circuitpython/releases
 """
-
-# imports
 
 import time
 from micropython import const
@@ -153,16 +151,7 @@ class Adafruit_STMPE610:
     See the examples folder for instantiation kwargs and properties."""
 
     def __init__(self):
-        """Check the touchscreen calibration and display size kwargs from the
-        I2C or SPI interface class then reset the controller."""
-        if not self._calib:
-            self._calib = ((0, 4095), (0, 4095))
-        if not self._disp_size:
-            self._disp_size = (4095, 4095)
-
-        if not self._disp_rotation in (0, 90, 180, 270):
-            raise ValueError("Display rotation value must be 0, 90, 180, or 270")
-
+        """Reset the controller."""
         self._write_register_byte(_STMPE_SYS_CTRL1, _STMPE_SYS_CTRL1_RESET)
         time.sleep(0.001)
 
@@ -265,7 +254,7 @@ class Adafruit_STMPE610:
         return point
 
     @property
-    def touch_point(self):
+    def touch_point(self): # pylint: disable=too-many-branches
         """Read latest touched point value and convert to calibration-adjusted
         and rotated display coordinates. Commpatible with Displayio Button.
         :return: x, y, pressure
@@ -339,7 +328,8 @@ class Adafruit_STMPE610_I2C(Adafruit_STMPE610):
             touch_flip=(False, False))
 
     """
-    def __init__(
+
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         i2c,
         address=_STMPE_ADDR,
@@ -354,7 +344,16 @@ class Adafruit_STMPE610_I2C(Adafruit_STMPE610):
         self._disp_rotation = disp_rotation
         self._touch_flip = touch_flip
 
-        """Check that the STMPE610 was found."""
+        # Check the touchscreen calibration and display size kwargs.
+        if not self._calib:
+            self._calib = ((0, 4095), (0, 4095))
+        if not self._disp_size:
+            self._disp_size = (4095, 4095)
+
+        if self._disp_rotation not in (0, 90, 180, 270):
+            raise ValueError("Display rotation value must be 0, 90, 180, or 270")
+
+        # Check that the STMPE610 was found.
         import adafruit_bus_device.i2c_device as i2cdev  # pylint: disable=import-outside-toplevel
 
         self._i2c = i2cdev.I2CDevice(i2c, address)
@@ -413,7 +412,7 @@ class Adafruit_STMPE610_SPI(Adafruit_STMPE610):
 
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         spi,
         cs,
@@ -429,7 +428,16 @@ class Adafruit_STMPE610_SPI(Adafruit_STMPE610):
         self._disp_rotation = disp_rotation
         self._touch_flip = touch_flip
 
-        """Check that the STMPE610 was found."""
+        # Check the touchscreen calibration and display size kwargs.
+        if not self._calib:
+            self._calib = ((0, 4095), (0, 4095))
+        if not self._disp_size:
+            self._disp_size = (4095, 4095)
+
+        if self._disp_rotation not in (0, 90, 180, 270):
+            raise ValueError("Display rotation value must be 0, 90, 180, or 270")
+
+        # Check that the STMPE610 was found.
         import adafruit_bus_device.spi_device as spidev  # pylint: disable=import-outside-toplevel
 
         self._spi = spidev.SPIDevice(spi, cs, baudrate=baudrate)
