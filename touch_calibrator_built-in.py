@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-touch_calibrator_built-in.py  2022-01-20 v2.0
+touch_calibrator_built-in.py  2022-01-21 v2.1
 
 Author(s): JG for Cedar Grove Maker Studios
 
@@ -28,7 +28,7 @@ import board
 import time
 import displayio
 import vectorio
-from adafruit_bitmap_font import bitmap_font
+import terminalio
 from adafruit_display_text.label import Label
 import adafruit_touchscreen
 from simpleio import map_range
@@ -106,7 +106,7 @@ else:
 # Define the graphic objects if REPL_ONLY = False.
 if not REPL_ONLY:
     # Define the text graphic objects
-    font_0 = bitmap_font.load_font("/fonts/OpenSans-9.bdf")
+    font_0 = terminalio.FONT
 
     coordinates = Label(
         font=font_0,
