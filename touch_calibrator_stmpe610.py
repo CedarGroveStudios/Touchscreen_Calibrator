@@ -53,7 +53,6 @@ BLUE_DK = 0x000060  # Screen fill
 RED = 0xFF0000  # Boundary
 WHITE = 0xFFFFFF  # Text
 
-
 # Release any resources currently in use for the displays
 displayio.release_displays()
 
