@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-touch_calibrator_built-in.py  2022-01-21 v2.1
+touch_calibrator_built_in.py  2022-01-21 v2.1
 
 Author(s): JG for Cedar Grove Maker Studios
 
