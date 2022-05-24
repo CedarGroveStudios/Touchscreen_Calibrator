@@ -4,7 +4,7 @@ A simple CircuitPython DisplayIO resistive touchscreen calibrator for Adafruit b
 On-screen touchscreen calibrator for built-in and TFT FeatherWing displays. To use, run as a standalone module, include the following line in the calling module, or type into the REPL:
 
    ```python
-   import touch_calibrator_built-in
+   import touch_calibrator_built_in
    ```
    for built-in displays or
    ```python
