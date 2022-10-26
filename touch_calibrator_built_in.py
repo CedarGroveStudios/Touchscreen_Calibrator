@@ -1,10 +1,9 @@
-# SPDX-FileCopyrightText: 2022 Cedar Grove Maker Studios
+# SPDX-FileCopyrightText: Copyright (c) 2022 JG for Cedar Grove Maker Studios
+#
 # SPDX-License-Identifier: MIT
-
 """
-touch_calibrator_built_in.py  2022-01-21 v2.1
-
-Author(s): JG for Cedar Grove Maker Studios
+`cedargrove_touchcalibrator.built_in`
+================================================================================
 
 On-screen touchscreen calibrator for built-in displays.
 
@@ -22,6 +21,19 @@ previous orientation of the display.
 REPL_ONLY: If False, calibration values are shown graphically on the screen
 and printed to the REPL. If True, the values are only printed to the REPL.
 Default value is False.
+
+* Author(s): JG
+
+Implementation Notes
+--------------------
+
+**Hardware:**
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the supported boards:
+  https://circuitpython.org/downloads
+
 """
 
 import time
@@ -32,6 +44,11 @@ import terminalio
 from adafruit_display_text.label import Label
 from simpleio import map_range
 import adafruit_touchscreen
+
+__version__ = "0.0.0+auto.0"
+__repo__ = (
+    "https://github.com/CedarGroveStudios/Cedargrove_CircuitPython_TouchCalibrator.git"
+)
 
 
 # Operational parameters:

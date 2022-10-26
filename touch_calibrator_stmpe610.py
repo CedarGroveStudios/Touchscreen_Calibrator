@@ -1,10 +1,9 @@
-# SPDX-FileCopyrightText: 2022 CedarGroveMakerStudios for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2022 JG for Cedar Grove Maker Studios
+#
 # SPDX-License-Identifier: MIT
-
 """
-touch_calibrator_stmpe610.py  2022-01-20 v1.1
-
-Author(s): JG for Cedar Grove Maker Studios
+`cedargrove_touchcalibrator.featherwing`
+================================================================================
 
 On-screen touchscreen calibrator for TFT FeatherWing displays.
 
@@ -26,6 +25,22 @@ Default value is False.
 RAW_DATA: If True, measure and display the raw touchscreen values. If False,
 display the touch value in screen coordinates; requires a previously measured
 calibration tuple for screen coordinate conversion accuracy.
+
+* Author(s): JG
+
+Implementation Notes
+--------------------
+
+**Hardware:**
+
+* 2.4" 320x240 TFT FeatherWing (PID #3315) or
+* 3.5" 480x320 TFT FeatherWing (PID #3651)
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the supported boards:
+  https://circuitpython.org/downloads
+
 """
 
 import time
@@ -35,11 +50,23 @@ import displayio
 import vectorio
 import terminalio
 from adafruit_display_text.label import Label
-
-# from adafruit_hx8357 import HX8357
-from adafruit_ili9341 import ILI9341
 from simpleio import map_range
 import adafruit_stmpe610
+
+__version__ = "0.0.0+auto.0"
+__repo__ = (
+    "https://github.com/CedarGroveStudios/Cedargrove_CircuitPython_TouchCalibrator.git"
+)
+
+
+# Select display type; ILI9341 for the 2.4" 320x240 TFT FeatherWing (#3315)
+#   or "HX8357" for the 3.5" 480x320 TFT FeatherWing (#3651)
+DISPLAY_TYPE = "ILI9341"
+
+if DISPLAY_TYPE == "ILI9341":
+    from adafruit_ili9341 import ILI9341  # 2.4" 320x240 TFT FeatherWing
+elif DISPLAY_TYPE == "HX8357":
+    from adafruit_hx8357 import HX8357  # 3.5" 480x320 TFT FeatherWing
 
 # Operational parameters:
 DISPLAY_ROTATION = 0  # Specify 0, 90, 180, or 270 degrees
@@ -66,8 +93,8 @@ disp_bus = displayio.FourWire(
 display = ILI9341(disp_bus, width=320, height=240)
 _touch_flip = (False, False)
 
-"""# Instantiate the 3.5" 480x320 TFT FeatherWing (#3651).
-display = HX8357(disp_bus, width=480, height=320)
+# Uncomment to instantiate the 3.5" 480x320 TFT FeatherWing (#3651).
+"""display = HX8357(disp_bus, width=480, height=320)
 _touch_flip = (False, True)"""
 
 # Check rotation value and update display.
