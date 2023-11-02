@@ -109,7 +109,8 @@ else:
 # Activate the display graphics unless REPL_ONLY=True.
 if not REPL_ONLY:
     display_group = displayio.Group()
-    display.show(display_group)
+    # display.show(display_group)
+    display.root_group = display_group
 
 # Instantiate touchscreen.
 ts_cs = digitalio.DigitalInOut(board.D6)
